@@ -1,4 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from States import GlobalStates
 
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
@@ -7,3 +8,10 @@ def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
 
 
 arr1 = ["Create community", "See my subscriptions", "Unsubscribe"]
+all_states = [GlobalStates.waiting_for_action,
+              GlobalStates.waiting_for_payment,
+              GlobalStates.viewing_communities,
+              GlobalStates.creating_community,
+              GlobalStates.unsubscribing_from_community,
+              GlobalStates.confirming_action,
+              GlobalStates.editing_community]
