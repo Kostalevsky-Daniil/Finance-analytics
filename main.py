@@ -2,47 +2,64 @@ import asyncio
 import logging
 import sys
 
-from aiogram import types
-from aiogram.filters import CommandStart, Command, CommandObject
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message
-from aiogram.utils.markdown import hbold
-
-from aiogram.enums import ParseMode
-from psycopg2 import *
-from aiogram import Bot, Dispatcher
+from aiogram.fsm.context import FSMContext
 
 import config
+import helpers
+from helpers import arr1
+from States import GlobalStates
 
-# Разбор системы оплаты и интеграция в код
-# Реализация кнопки оплаты подписки + связь с платежной системой
-# Реализация отписки от сообщества (легко)
-class GlobalStates(StatesGroup):
-    creating_community = State()
-    viewing_communities = State()
-    unsubscribing_from_community = State()
-    editing_community = State()
+from aiogram.methods.send_invoice import SendInvoice
+from aiogram import F, Router
+from aiogram.filters import CommandStart, Command, CommandObject, StateFilter
 
-# class CreationStates(StatesGroup):
+from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
+    ReplyKeyboardRemove
+from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
 
+from psycopg2 import *
 
-dp = Dispatcher()
-
-
-@dp.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
-    kb = [
-        [types.KeyboardButton(text="Create community")],
-        [types.KeyboardButton(text="See my subscriptions")],
-        [types.KeyboardButton(text="Unsubscribe")]
-    ]
-    # if message.from_user.id in db:
-    #     kb += [types.KeyboardButton(text="Edit my communities")]
-    keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=keyboard)
+main_r = Router()
+create = Router()
+unsub = Router()
+sub = Router()
+view = Router()
+edit = Router()
+payment = Router()
 
 
-@dp.message(Command("unsubscribe"))
+@main_r.message(CommandStart(), StateFilter(None))
+async def command_start_handler(message: Message, state: FSMContext) -> None:
+    # con = connect(dbname='communities', user='postgres', password='12345678', host='localhost', port='5432')
+    # cur = con.cursor()
+    # res = cur.execute(f"SELECT * FROM communities WHERE owner = {message.from_user.id}")
+    # cur.close()
+    # con.close()
+    # if len(res) > 0:
+    #    arr1.append("Edit community")
+    await message.answer(f"Hello, {message.from_user.full_name}!\n\nChoose one of the actions below:",
+                         reply_markup=helpers.make_row_keyboard(arr1))
+    await state.set_state(GlobalStates.waiting_for_action)
+
+
+@main_r.message(F.text, StateFilter(GlobalStates.waiting_for_action))
+async def menu_handler(message: Message, state: FSMContext):
+    if message.text == "Create community":
+        await state.set_state(GlobalStates.creating_community)
+        await message.answer("Creating...", reply_markup=None)
+    if message.text == "Edit community":
+        await state.set_state(GlobalStates.editing_community)
+        await message.answer("Editing...", reply_markup=None)
+    if message.text == "See my communities":
+        await state.set_state(GlobalStates.viewing_communities)
+        await message.answer("Seeing...", reply_markup=None)
+    if message.text == "Unsubscribe":
+        await state.set_state(GlobalStates.unsubscribing_from_community)
+        await message.answer("Unsubscribing...", reply_markup=None)
+
+
+
 async def unsubscribe_handler(message: Message, command: CommandObject) -> None:
     if command.args is None:
         await message.answer(
@@ -51,26 +68,42 @@ async def unsubscribe_handler(message: Message, command: CommandObject) -> None:
         return
     else:
         community_name = command.args
-
+    # запрос в бд для поиска комьюнити и получение его id
     # unsubscribe(1223, 23213)
     await message.answer(f"Successfully unsubscribed from {community_name}")
 
 
-def pay_subscription():
-    pass
+async def pay_subscription(message: Message, bot: Bot, state: FSMContext) -> None:
+    await state.set_state(GlobalStates.waiting_for_payment)
+    await bot(SendInvoice(chat_id=message.chat.id, title="Payment", description="monthly payment",
+                          payload="Payment for", provider_token=config.STRIPE_TOKEN,
+                          currency="USD", prices=[LabeledPrice(label="Monthly Payment", amount=5 * 100)],
+                          reply_markup=None))
+
+
+async def pre_checkout(pre_checkoutquery: PreCheckoutQuery, bot: Bot):
+    await bot.answer_pre_checkout_query(pre_checkoutquery.id, ok=True)
+
+
+@payment.message(F.successful_payment, StateFilter(GlobalStates.waiting_for_payment))
+async def succes(message: Message, state: FSMContext) -> None:
+    await message.answer("Payment successful")
+    await state.set_state(GlobalStates.waiting_for_action)
 
 
 # Спрашиваем подтверждение
 # Удаление из базы данных определенного комьюнити
 # Добавление даты когда кикать в бд с отложенными делами
-def unsubscribe(uid, cid):
+def unsubscribe(uid, cid, false=None):
     print("Are you sure you want to unsubscribe? yes/no")
     if input() == "yes":
         print("Unsubscribing...")
         unsubscribe_user(uid, cid)
         print('Unsubscribed user_id: {uid}')
+        return True
     else:
         print("Exiting...")
+        return False
     pass
 
 
@@ -79,17 +112,39 @@ def set_up_payment():
     pass
 
 
+async def cancel_handler(message: Message, state: FSMContext) -> None:
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    logging.info("Cancelling state %r", current_state)
+    await state.clear()
+    await message.answer(
+        "Cancelled.",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+
 def unsubscribe_user(uid, cid):
     con = connect(dbname='subscriptions', user='postgres', password='12345678', host='localhost', port='5432')
     cur = con.cursor()
+    end_date = cur.execute(f"SELECT end_date FROM subscriptions WHERE user_id={uid} AND community_id={cid} ")
     cur.execute(f'DELETE FROM subscriptions WHERE user_id = {uid} AND community_id = {cid}')
     cur.close()
     con.close()
     print('Unsubscribed user_id: {uid} ')
 
 
-async def main() -> None:
+async def main():
     bot = Bot(config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+    dp = Dispatcher()
+
+    dp.include_router(main_r)
+    await bot.delete_webhook(drop_pending_updates=True)
+
+    dp.message.register(pay_subscription, GlobalStates.waiting_for_action, Command("pay"))
+    dp.pre_checkout_query.register(pre_checkout)
+    dp.message(cancel_handler, StateFilter(None), Command('cancel'))
     await dp.start_polling(bot)
 
 
