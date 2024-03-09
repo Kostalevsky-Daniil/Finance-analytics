@@ -9,8 +9,7 @@ import helpers
 from helpers import arr1, all_states
 from states import GlobalStates
 
-from aiogram.methods.send_invoice import SendInvoice
-from aiogram import F, Router, types
+from aiogram import F, Router
 from aiogram.filters import CommandStart, Command, CommandObject, StateFilter
 
 from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
