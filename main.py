@@ -10,11 +10,11 @@ from helpers import arr1
 from States import GlobalStates
 
 from aiogram.methods.send_invoice import SendInvoice
-from aiogram import F, Router
+from aiogram import F, Router, types
 from aiogram.filters import CommandStart, Command, CommandObject, StateFilter
 
 from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
-    ReplyKeyboardRemove
+    ReplyKeyboardRemove, ContentType
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 
@@ -43,21 +43,34 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(GlobalStates.waiting_for_action)
 
 
-@main_r.message(F.text, StateFilter(GlobalStates.waiting_for_action))
-async def menu_handler(message: Message, state: FSMContext):
-    if message.text == "Create community":
-        await state.set_state(GlobalStates.creating_community)
-        await message.answer("Creating...", reply_markup=None)
-    if message.text == "Edit community":
-        await state.set_state(GlobalStates.editing_community)
-        await message.answer("Editing...", reply_markup=None)
-    if message.text == "See my communities":
-        await state.set_state(GlobalStates.viewing_communities)
-        await message.answer("Seeing...", reply_markup=None)
-    if message.text == "Unsubscribe":
-        await state.set_state(GlobalStates.unsubscribing_from_community)
-        await message.answer("Unsubscribing...", reply_markup=None)
+@main_r.message(F.text == "Create community", StateFilter(GlobalStates.waiting_for_action))
+async def create_handler(message: Message, state: FSMContext):
+    await state.set_state(GlobalStates.creating_community)
+    await message.answer("Creating...", reply_markup=types.ReplyKeyboardRemove())
 
+
+@main_r.message(F.text == "Edit community", StateFilter(GlobalStates.waiting_for_action))
+async def create_handler(message: Message, state: FSMContext):
+    await state.set_state(GlobalStates.editing_community)
+    await message.answer("Editing...", reply_markup=types.ReplyKeyboardRemove())
+
+
+@main_r.message(F.text == "See my subscriptions", StateFilter(GlobalStates.waiting_for_action))
+async def show_handler(message: Message, state: FSMContext):
+    await state.set_state(GlobalStates.viewing_communities)
+    await message.answer("Seeing...", reply_markup=types.ReplyKeyboardRemove())
+
+
+@main_r.message(F.text == "Unsubscribe", StateFilter(GlobalStates.waiting_for_action))
+async def unsubscribe_handler(message: Message, state: FSMContext):
+    await state.set_state(GlobalStates.unsubscribing_from_community)
+    await message.answer("Unsubscribing...", reply_markup=types.ReplyKeyboardRemove())
+
+
+@main_r.message(F.text == "", StateFilter(GlobalStates.waiting_for_action))
+async def create_handler(message: Message, state: FSMContext):
+    await state.set_state(GlobalStates.creating_community)
+    await message.answer("Creating...", reply_markup=None)
 
 
 async def unsubscribe_handler(message: Message, command: CommandObject) -> None:
@@ -78,17 +91,20 @@ async def pay_subscription(message: Message, bot: Bot, state: FSMContext) -> Non
     await bot(SendInvoice(chat_id=message.chat.id, title="Payment", description="monthly payment",
                           payload="Payment for", provider_token=config.STRIPE_TOKEN,
                           currency="USD", prices=[LabeledPrice(label="Monthly Payment", amount=5 * 100)],
-                          reply_markup=None))
+                          ))
 
 
-async def pre_checkout(pre_checkoutquery: PreCheckoutQuery, bot: Bot):
+async def pre_checkout(pre_checkoutquery: PreCheckoutQuery, bot: Bot, state: FSMContext) -> None:
     await bot.answer_pre_checkout_query(pre_checkoutquery.id, ok=True)
+    st = await state.get_state()
+    print(f"{st}")
 
 
-@payment.message(F.successful_payment, StateFilter(GlobalStates.waiting_for_payment))
-async def succes(message: Message, state: FSMContext) -> None:
-    await message.answer("Payment successful")
+@payment.message(lambda x: x.content_type == ContentType.SUCCESSFUL_PAYMENT,
+                 StateFilter(GlobalStates.waiting_for_payment))
+async def success(message: Message, state: FSMContext) -> None:
     await state.set_state(GlobalStates.waiting_for_action)
+    await message.answer("Payment successful", reply_markup=helpers.make_row_keyboard(arr1))
 
 
 # Спрашиваем подтверждение
@@ -140,6 +156,7 @@ async def main():
     dp = Dispatcher()
 
     dp.include_router(main_r)
+    dp.include_router(payment)
     await bot.delete_webhook(drop_pending_updates=True)
 
     dp.message.register(pay_subscription, GlobalStates.waiting_for_action, Command("pay"))
