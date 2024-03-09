@@ -23,11 +23,21 @@ confirm = Router()
 
 @confirm.message(StateFilter(GlobalStates.confirming_action), F.text != "yes", F.text != "no")
 async def confirm_action(message: Message, state: FSMContext):
-    await message.answer("Are you sure?", reply_markup=helpers.make_row_keyboard(["yes", "no"]))
+    comm = await state.get_data()
+    await state.set_data({"data": message.text})
+    print(await state.get_data())
+    comm = comm["user_communities"]
+    print(message.text)
+    if message.text in comm:
+        await message.answer("Are you sure?", reply_markup=helpers.make_row_keyboard(["yes", "no"]))
 
 
 @confirm.message(StateFilter(GlobalStates.confirming_action), F.text == "yes")
 async def confirm_action(message: Message, state: FSMContext):
+    my_community = await state.get_data()
+    my_community = my_community["data"]
+    # SQL запрос удаляющий пользователя из базы данных
+    # Создание таска на кик пользователя из чата или моментальный кик
     await message.answer("confirmed", reply_markup=types.ReplyKeyboardRemove())
     await state.set_state(GlobalStates.unsubscribing_from_community)
 

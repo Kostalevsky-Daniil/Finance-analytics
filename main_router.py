@@ -49,6 +49,7 @@ async def unsubscribe_handler(message: Message, state: FSMContext):
     await state.set_state(GlobalStates.confirming_action)
     # проверка состоит ли пользователь в комьюнити
     comm = ["Community 1", "Community 2", "Community 3"]
+    await state.set_data({"user_communities": comm})
     await message.answer("Choose a community that you want to leave", reply_markup=make_row_keyboard(comm))
 
 
