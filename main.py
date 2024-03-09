@@ -14,22 +14,16 @@ from aiogram.enums import ParseMode
 from psycopg2 import *
 from main_router import main_r
 from payment_router import payment
+from confirm_router import confirm
 
 create = Router()
-unsub = Router()
 sub = Router()
 view = Router()
 edit = Router()
 
 
 
-# con = connect(dbname='communities', user='postgres', password='12345678', host='localhost', port='5432')
-# cur = con.cursor()
-# res = cur.execute(f"SELECT * FROM communities WHERE owner = {message.from_user.id}")
-# cur.close()
-# con.close()
-# if len(res) > 0:
-#    arr1.append("Edit community")
+
 
 async def unsubscribe_handler(message: Message, command: CommandObject) -> None:
     if command.args is None:
@@ -58,7 +52,7 @@ def unsubscribe(uid, cid, false=None):
 
 
 # когда создается комьюнити - настраивается платежка
-def set_up_payment():
+async def set_up_payment():
     pass
 
 
@@ -78,6 +72,7 @@ async def main():
 
     dp.include_router(main_r)
     dp.include_router(payment)
+    dp.include_router(confirm)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

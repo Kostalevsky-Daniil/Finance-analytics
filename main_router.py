@@ -1,19 +1,27 @@
 from aiogram.fsm.context import FSMContext
 import logging
-import helpers
-from helpers import arr1, all_states
-from States import GlobalStates
+from helpers import arr1, all_states, make_row_keyboard
+from states import GlobalStates
 
 from aiogram import F, Router, types
-from aiogram.filters import CommandStart,StateFilter, Command
+from aiogram.filters import CommandStart, StateFilter, Command
 
 from aiogram.types import Message
 
 main_r = Router()
+
+
 @main_r.message(CommandStart(), StateFilter(None))
 async def command_start_handler(message: Message, state: FSMContext) -> None:
+    # con = connect(dbname='communities', user='postgres', password='12345678', host='localhost', port='5432')
+    # cur = con.cursor()
+    # res = cur.execute(f"SELECT * FROM communities WHERE owner = {message.from_user.id}")
+    # cur.close()
+    # con.close()
+    # if len(res) > 0:
+    #    arr1.append("Edit community")
     await message.answer(f"Hello, {message.from_user.full_name}!\n\nChoose one of the actions below:",
-                         reply_markup=helpers.make_row_keyboard(arr1))
+                         reply_markup=make_row_keyboard(arr1))
     await state.set_state(GlobalStates.waiting_for_action)
 
 
@@ -31,17 +39,17 @@ async def create_handler(message: Message, state: FSMContext):
 
 @main_r.message(F.text == "See my subscriptions", StateFilter(GlobalStates.waiting_for_action))
 async def show_handler(message: Message, state: FSMContext):
-    await state.set_state(GlobalStates.viewing_communities)
-    await message.answer("Seeing...", reply_markup=types.ReplyKeyboardRemove())
+    comm = ["Community 1", "Community 2", "Community 3"] # Вместо этого парсим данные из бд
+    s = "\n".join(comm)
+    await message.answer("Your communities are: \n\n" + s)
 
 
 @main_r.message(F.text == "Unsubscribe", StateFilter(GlobalStates.waiting_for_action))
 async def unsubscribe_handler(message: Message, state: FSMContext):
-    await state.set_state(GlobalStates.unsubscribing_from_community)
-    await message.answer("Unsubscribing...", reply_markup=types.ReplyKeyboardRemove())
-
-
-
+    await state.set_state(GlobalStates.confirming_action)
+    # проверка состоит ли пользователь в комьюнити
+    comm = ["Community 1", "Community 2", "Community 3"]
+    await message.answer("Choose a community that you want to leave", reply_markup=make_row_keyboard(comm))
 
 
 @main_r.message(StateFilter(*all_states), Command("cancel"))
@@ -49,10 +57,8 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
     if current_state is None:
         return
-
-    logging.info("Cancelling state %r", current_state)
     await state.set_state(GlobalStates.waiting_for_action)
     await message.answer(
         "Cancelled.",
-        reply_markup=helpers.make_row_keyboard(arr1),
+        reply_markup=make_row_keyboard(arr1),
     )

@@ -1,5 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from States import GlobalStates
+from states import GlobalStates
 
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:

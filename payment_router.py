@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 import config
 import helpers
 from helpers import arr1, all_states
-from States import GlobalStates
+from states import GlobalStates
 
 from aiogram.methods.send_invoice import SendInvoice
 from aiogram import F, Router, types
@@ -19,13 +19,27 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 
 payment = Router()
+
+
 @payment.message(StateFilter(GlobalStates.waiting_for_action), Command("pay"))
-async def pay_subscription(message: Message, bot: Bot, state: FSMContext) -> None:
-    await state.set_state(GlobalStates.waiting_for_payment)
-    await bot(SendInvoice(chat_id=message.chat.id, title="Payment", description="monthly payment",
-                          payload="Payment for", provider_token=config.STRIPE_TOKEN,
-                          currency="USD", prices=[LabeledPrice(label="Monthly Payment", amount=5 * 100)],
-                          ))
+async def pay_subscription(message: Message, bot: Bot, state: FSMContext, command: CommandObject) -> None:
+    if command.args is not None and len(command.args) > 0:
+        comunity_name = command.args[0]
+        await state.set_data({"user_data": [message.from_user.id, comunity_name]})
+        await state.set_state(GlobalStates.waiting_for_payment)
+        await bot(SendInvoice(chat_id=message.chat.id,
+                              title="Payment",
+                              description="monthly payment",
+                              payload="Payment for",
+                              provider_token=config.STRIPE_TOKEN,
+                              currency="USD",
+                              prices=[LabeledPrice(label="Monthly Payment", amount=1 * 100)],
+                              ))
+    else:
+        await message.answer("use /pay \"community_name\"")
+
+
+
 
 
 @payment.pre_checkout_query()
