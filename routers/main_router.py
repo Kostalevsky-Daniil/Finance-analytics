@@ -1,5 +1,5 @@
 from aiogram.fsm.context import FSMContext
-from helpers.helpers import arr1, all_states, make_row_keyboard
+from helpers.helpers import arr1, all_states, make_row_keyboard, params
 from helpers.states import GlobalStates
 
 from aiogram import F, Router, types
@@ -32,8 +32,15 @@ async def create_handler(message: Message, state: FSMContext):
 
 @main_r.message(F.text == "Edit community", StateFilter(GlobalStates.waiting_for_action))
 async def create_handler(message: Message, state: FSMContext):
-    await state.set_state(GlobalStates.editing_community)
-    await message.answer("Editing...", reply_markup=types.ReplyKeyboardRemove())
+    # SQL запрос на проверку есть ли комьюнити с овнером = user_id (берем только названия комьюнити)
+    res = ["Community1", "Community2", "Community3"]
+    # res = []
+    if res:
+        await message.answer("Which community do you want to edit?", reply_markup=make_row_keyboard(res))
+        await state.set_state(GlobalStates.editing_community)
+        await state.update_data({'data': res})
+    else:
+        await message.answer("You don't have any communities to edit!", reply_markup=make_row_keyboard(arr1))
 
 
 @main_r.message(F.text == "See my subscriptions", StateFilter(GlobalStates.waiting_for_action))

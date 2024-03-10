@@ -9,3 +9,6 @@ class GlobalStates(StatesGroup):
     editing_community = State()
     confirming_action = State()
     waiting_for_action = State()
+    choosing_param = State()
+    entering_limit = State()
+    entering_string = State()

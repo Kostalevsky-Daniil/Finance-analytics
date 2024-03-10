@@ -31,7 +31,8 @@ async def pay_subscription(message: Message, bot: Bot, state: FSMContext, comman
                               prices=[LabeledPrice(label="Monthly Payment", amount=1 * 100)],
                               ))
     else:
-        await message.answer(f"use /pay"+' *' + 'existing community name' + '*')
+        await message.answer("Seems like you entered a non-existed community. Please try again.")
+        await message.answer(f"Use /pay existing_community_name instead")
 
 
 @payment.pre_checkout_query()

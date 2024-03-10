@@ -11,17 +11,17 @@ from helpers import config
 from routers.main_router import main_r
 from routers.payment_router import payment
 from routers.confirm_router import confirm
+from routers.edit_router import edit
 
 create = Router()
 sub = Router()
 view = Router()
-edit = Router()
 
 
 async def main():
     bot = Bot(config.BOT_TOKEN)
     dp = Dispatcher()
-    dp.include_routers(main_r, payment, confirm)
+    dp.include_routers(main_r, payment, confirm, edit)
     bot_cmd = []
     for cmd in helpers.helpers.bot_command:
         bot_cmd.append(BotCommand(command=cmd[0], description=cmd[1]))

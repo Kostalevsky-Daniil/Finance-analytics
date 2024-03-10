@@ -21,3 +21,5 @@ bot_command = [
     ("pay", "Subscription payment. To use write /pay <Community name>"),
     ("cancel", "Cancel any action")
 ]
+
+params = ["Name", "Description", "Limit of people"]
