@@ -2,19 +2,14 @@ import asyncio
 import logging
 import sys
 
-import config
-
 from aiogram import Router
-from aiogram.filters import CommandObject
-
-from aiogram.types import Message
 from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
 
-from psycopg2 import *
-from main_router import main_r
-from payment_router import payment
-from confirm_router import confirm
+from helpers import config
+
+from routers.main_router import main_r
+from routers.payment_router import payment
+from routers.confirm_router import confirm
 
 create = Router()
 sub = Router()
@@ -23,7 +18,7 @@ edit = Router()
 
 
 async def main():
-    bot = Bot(config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(config.BOT_TOKEN)
     dp = Dispatcher()
 
     dp.include_router(main_r)
