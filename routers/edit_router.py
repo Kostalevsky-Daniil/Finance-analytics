@@ -1,19 +1,9 @@
-import asyncio
-import random
-import logging
-from aiogram import Bot, Dispatcher, types, F, Router
-from aiogram.filters.command import Command
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram import Router
+from aiogram import types
+from aiogram.filters import StateFilter
+from aiogram.fsm.context import FSMContext
 
 from helpers.helpers import make_row_keyboard, params, arr1
-from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
-    ReplyKeyboardRemove, ContentType
-from aiogram import Bot, Dispatcher, types
-from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, Command, CommandObject, StateFilter
-import logging
-import asyncio
-
 from helpers.states import GlobalStates
 
 edit = Router()

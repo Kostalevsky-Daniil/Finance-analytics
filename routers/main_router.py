@@ -27,7 +27,10 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
 @main_r.message(F.text == "Create community", StateFilter(GlobalStates.waiting_for_action))
 async def create_handler(message: Message, state: FSMContext):
     await state.set_state(GlobalStates.creating_community)
-    await message.answer("Creating...", reply_markup=types.ReplyKeyboardRemove())
+    await message.reply("To register a new community, please follow these steps:\n"
+                        "1. Add me to your group as an administrator.\n"
+                        "2. Grant me the rights to invite new members.\n"
+                        "3. Send the name of your community.", reply_markup=types.ReplyKeyboardRemove())
 
 
 @main_r.message(F.text == "Edit community", StateFilter(GlobalStates.waiting_for_action))
@@ -45,7 +48,7 @@ async def create_handler(message: Message, state: FSMContext):
 
 @main_r.message(F.text == "See my subscriptions", StateFilter(GlobalStates.waiting_for_action))
 async def show_handler(message: Message, state: FSMContext):
-    comm = ["Community 1", "Community 2", "Community 3"] # Вместо этого парсим данные из бд
+    comm = ["Community 1", "Community 2", "Community 3"]  # Вместо этого парсим данные из бд
     s = "\n".join(comm)
     await message.answer("Your communities are: \n\n" + s)
 

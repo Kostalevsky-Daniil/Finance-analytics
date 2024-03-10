@@ -13,7 +13,7 @@ from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
 from aiogram import Bot
 
 payment = Router()
-comm = ["Community1", "Community2", "Community3"]
+comm = ["Community 1", "Community 2", "Community 3"]
 
 
 @payment.message(StateFilter(GlobalStates.waiting_for_action), Command("pay"))
@@ -31,15 +31,13 @@ async def pay_subscription(message: Message, bot: Bot, state: FSMContext, comman
                               prices=[LabeledPrice(label="Monthly Payment", amount=1 * 100)],
                               ))
     else:
-        await message.answer("Seems like you entered a non-existed community. Please try again.")
+        await message.answer("Seems like you entered a non-existing community. Please try again.")
         await message.answer(f"Use /pay existing_community_name instead")
 
 
 @payment.pre_checkout_query()
-async def pre_checkout(pre_checkoutquery: PreCheckoutQuery, bot: Bot, state: FSMContext) -> None:
+async def pre_checkout(pre_checkoutquery: PreCheckoutQuery, bot: Bot) -> None:
     await bot.answer_pre_checkout_query(pre_checkoutquery.id, ok=True)
-    st = await state.get_data()
-    print(f"{st}")
 
 
 @payment.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT,

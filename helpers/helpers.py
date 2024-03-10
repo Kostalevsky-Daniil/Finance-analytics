@@ -1,5 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from helpers.states import GlobalStates
+from aiogram.types import BotCommand
 
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
@@ -23,3 +24,7 @@ bot_command = [
 ]
 
 params = ["Name", "Description", "Limit of people"]
+
+bot_cmd = []
+for cmd in bot_command:
+    bot_cmd.append(BotCommand(command=cmd[0], description=cmd[1]))
