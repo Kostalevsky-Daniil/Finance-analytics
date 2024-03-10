@@ -7,7 +7,7 @@ def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=[row], resize_keyboard=True)
 
 
-arr1 = ["Create community", "See my subscriptions", "Unsubscribe"]
+arr1 = ["Create community", "See my subscriptions", "Unsubscribe", "Edit community"]
 all_states = [GlobalStates.waiting_for_action,
               GlobalStates.waiting_for_payment,
               GlobalStates.viewing_communities,
@@ -17,6 +17,7 @@ all_states = [GlobalStates.waiting_for_action,
               GlobalStates.editing_community]
 
 bot_command = [
-    ("start", "Запуск бота"),
-    ("pay", "Оплата подписки")
+    ("start", "Starting the bot"),
+    ("pay", "Subscription payment. To use write /pay <Community name>"),
+    ("cancel", "Cancel any action")
 ]

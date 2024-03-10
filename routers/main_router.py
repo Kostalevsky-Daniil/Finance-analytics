@@ -55,7 +55,7 @@ async def unsubscribe_handler(message: Message, state: FSMContext):
 @main_r.message(StateFilter(*all_states), Command("cancel"))
 async def cancel_handler(message: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
-    if current_state is None:
+    if current_state is GlobalStates.waiting_for_action or current_state is None:
         return
     await state.set_state(GlobalStates.waiting_for_action)
     await message.answer(
