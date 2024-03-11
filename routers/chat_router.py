@@ -17,6 +17,7 @@ chat = Router()
     )
 )
 async def chat_member(event: ChatMemberUpdated):
+    # Добавление комьюнити в бд комьюнити, в которых есть бот
     bot_in.add(event.chat.full_name)
 
 
@@ -30,4 +31,5 @@ async def chat_member(event: ChatMemberUpdated):
 )
 async def chat_member(event: ChatMemberUpdated):
     if event.chat.full_name in bot_in:
+        # Удаление комьюнити из бд комьюнити, в которых есть бот
         bot_in.remove(event.chat.full_name)

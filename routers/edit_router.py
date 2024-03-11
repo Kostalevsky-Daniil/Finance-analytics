@@ -41,6 +41,7 @@ async def choosing_param(message: types.Message, state: FSMContext):
 @edit.message(StateFilter(GlobalStates.entering_limit))
 async def entering_limit(message: types.Message, state: FSMContext):
     if message.text.isdigit() and 200000 >= int(message.text) >= 1:
+        # SQL запрос на изменение лимита
         await message.answer("Successfully changed value")
         await message.answer("New Limit of People = {}".format(message.text), reply_markup=make_row_keyboard(arr1))
         await state.set_state(GlobalStates.waiting_for_action)
@@ -52,5 +53,6 @@ async def entering_limit(message: types.Message, state: FSMContext):
 async def entering_string(message: types.Message, state: FSMContext):
     data = await state.get_data()
     await message.answer("Successfully changed value")
+    # SQL запрос на изменение данных (добавить if)
     await message.answer(f"New {data["param"]} = {message.text}", reply_markup=make_row_keyboard(arr1))
     await state.set_state(GlobalStates.waiting_for_action)

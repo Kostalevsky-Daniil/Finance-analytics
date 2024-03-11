@@ -111,7 +111,9 @@ async def confirm_description(message: types.Message, state: FSMContext):
     data = await state.get_data()
     description = data.get("description")
     await message.reply(f"Description set. Community registration is complete.")
-    await state.clear()
+    # 1 Добавление в бд communities всей информации
+    # 2 Создание отдельной бд под новое комьюнити
+    await state.set_state(GlobalStates.waiting_for_action)
 
 
 @create.message(F.text.lower() == 'cancel', StateFilter(GlobalStates.confirmation_description))
