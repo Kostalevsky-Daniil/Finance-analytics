@@ -1,0 +1,92 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Чтобы контент находился по центру по вертикали */
+}
+
+.App button {
+  margin: 10px; /* Равное расстояние между кнопками */
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 20px;
+}
+
+.input {
+  /*width: 100%;*/
+  /*padding: 10px;*/
+  /*margin-top: 15px;*/
+
+  width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: #f9f9f9; /*var(--tg-theme-section-bg-color)*/
+}
+
+h3 {
+  font: menu;
+  color: var(--tg-theme-accent-text-color);
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.select {
+  padding: 10px;
+  margin-top: 15px;
+}
+/*.button {*/
+/*  background-color: #4CAF50; !* Зеленый цвет *!*/
+/*  border: none;*/
+/*  color: white;*/
+/*  padding: 15px 32px;*/
+/*  text-align: center;*/
+/*  text-decoration: none;*/
+/*  display: inline-block;*/
+/*  font-size: 16px;*/
+/*  margin: 4px 2px;*/
+/*  transition-duration: 0.4s;*/
+/*  cursor: pointer;*/
+/*}*/
+
+/*.button:hover {*/
+/*  background-color: #45a; !* Темно-зеленый цвет при наведении *!*/
+/*}*/
+
+/*button {*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  align-items: center;*/
+/*}*/
+
+/*.telegram-button {*/
+/*  background-color: #0088cc;*/
+/*  color: white;*/
+/*  border: none;*/
+/*  border-radius: 8px;*/
+/*  padding: 10px 20px;*/
+/*  margin: 5px;*/
+/*  cursor: pointer;*/
+/*  font-size: 16px;*/
+/*  font-weight: bold;*/
+/*}*/
+
+/*.telegram-button:hover {*/
+/*  background-color: #005580;*/
+/*}*/
