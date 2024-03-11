@@ -1,2 +1,4 @@
-STRIPE_TOKEN = "284685063:TEST:OTMzOTU4MGFlNjhl"
-BOT_TOKEN = "6530297781:AAG5gOIQ1cYRG2-QO4FpC9E_45NqkdEjzSs"
+import os
+
+STRIPE_TOKEN = os.getenv("stripe")
+BOT_TOKEN = os.getenv("bot_token")
