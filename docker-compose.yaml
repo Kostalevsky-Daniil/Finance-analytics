@@ -1,21 +1,25 @@
 version: "3.7"
 services:
-#  db:
-#    image: postgres:latest
-#    restart: always
-#    ports:
-#      - "4444:4444"
-#    volumes:
-#      - pg-data:/var/lib/postgresql/data
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
 
   tg-bot:
     build: .
     command: sh -c "python -m main"
     ports:
       - "8000:8000"
-#    depends_on:
-#      db:
-#        condition: service_healthy
+    depends_on:
+      db:
+        condition: service_started
     restart: always
 
 volumes:
