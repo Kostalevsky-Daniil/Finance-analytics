@@ -1,18 +1,10 @@
-import asyncio
-import random
-import logging
-from aiogram import Bot, Dispatcher, types, F, Router
-from aiogram.filters.command import Command
+from aiogram import F, Router
+from aiogram import types
+from aiogram.filters import StateFilter
+from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, \
-    ReplyKeyboardRemove, ContentType
-from aiogram import Bot, Dispatcher, types
-from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, Command, CommandObject, StateFilter
-import logging
-import asyncio
-
+from helpers.helpers import bot_in, make_row_keyboard, arr1
 from helpers.states import GlobalStates
 
 create = Router()
@@ -20,15 +12,14 @@ create = Router()
 
 @create.message(StateFilter(GlobalStates.creating_community))
 async def confirm_add_bot(message: types.Message, state: FSMContext):
-    community_name = message.text.lower()
-    # check if the bot is administrator
-    # chat_member = await bot.get_chat_member(message.chat.id, bot.id)
-    chat_member = "administrator"
-    if chat_member == "administrator":  # chat_member.status
+    community_name = message.text
+    if message.text in bot_in:
         await message.reply(f"Great! Community name set to {community_name}. Now, set the limit of users.")
         await state.set_state(GlobalStates.limit_of_users)
     else:
-        await message.reply("Please add the bot as an administrator to proceed.")
+        await message.reply("Please add the bot as an administrator to proceed and restart this action",
+                            reply_markup=make_row_keyboard(arr1))
+        await state.set_state(GlobalStates.waiting_for_action)
 
 
 @create.message(F.text, StateFilter(GlobalStates.limit_of_users))
@@ -126,4 +117,4 @@ async def confirm_description(message: types.Message, state: FSMContext):
 @create.message(F.text.lower() == 'cancel', StateFilter(GlobalStates.confirmation_description))
 async def cancel_description(message: types.Message, state: FSMContext):
     await state.set_state(GlobalStates.waiting_for_action)
-    await message.reply("Community registration canceled.")
+    await message.reply("Community registration canceled.", reply_markup=make_row_keyboard(arr1))

@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from helpers.states import GlobalStates
-from aiogram.types import BotCommand
+from aiogram.types import BotCommand, Message, ReplyKeyboardRemove
 
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
@@ -28,3 +28,10 @@ params = ["Name", "Description", "Limit of people"]
 bot_cmd = []
 for cmd in bot_command:
     bot_cmd.append(BotCommand(command=cmd[0], description=cmd[1]))
+
+
+async def shut_down_event(message: Message):
+    await message.answer("Bot is sleeping...", reply_markup=ReplyKeyboardRemove())
+
+
+bot_in = set()

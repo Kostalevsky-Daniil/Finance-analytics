@@ -1,19 +1,18 @@
-from typing import Union
+from typing import Union, Any
 
-from sqlalchemy import AsyncEngine, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import URL
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine as create_async, async_sessionmaker
 
 
 def create_async_engine(url: Union[URL, str]) -> AsyncEngine:
-    return create_engine(url=url, pool_pre_ping=True, encoding="utf-8", echo=True)
+    return create_async(url=url, pool_pre_ping=True, echo=True)
 
 
-def proceed_schema(session: AsyncSession, metadata) -> None:
-    with session.begin():
-        session.run_sync(metadata.create_all)
+async def proceed_schema(engine: AsyncEngine, metadata) -> None:
+    async with engine.connect() as conn:
+        await conn.run_sync(metadata.create_all)
 
 
-def get_session_maker(engine: AsyncEngine) -> sessionmaker:
-    return sessionmaker(engine, class_=AsyncSession)
+def get_session_maker(engine: AsyncEngine) -> async_sessionmaker:
+    return async_sessionmaker(engine, class_=AsyncSession)
